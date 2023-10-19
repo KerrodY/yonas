@@ -32,7 +32,6 @@ end
 
 module SlashCommands
     extend Discordrb::EventContainer
-    extend Discordrb::Events
 
     application_command(:influence_push) do |event|
       InfluencePush.create!(player: event.options['name'], role: event.options['role'])
@@ -109,7 +108,7 @@ module SlashCommands
             puts online_div
 
             if online_div
-              channel = channel(channel_id)
+              channel = event.bot.channel(channel_id)
               channel&.send_message("Server is online @here")
 
               break
@@ -128,7 +127,7 @@ module SlashCommands
     application_command(:scorpio) do |event|
       @scorpio = true
       channel_id = event.channel.id
-      channel = channel(channel_id)
+      channel = event.bot.channel(channel_id)
       timezone = Time.now.zone == 'AUS Eastern Summer Time' ? 'AEST' : 'AEDT'
       spawn_time = Time.now + (89 * 60)
       event.respond(content: "Scorpio will be spawning roughly at #{spawn_time.strftime("%I:%M %p - #{timezone} - %B %d, %Y")}")
