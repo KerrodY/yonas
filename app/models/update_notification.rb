@@ -1,0 +1,2 @@
+class UpdateNotification < ApplicationRecord
+end

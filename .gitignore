@@ -38,4 +38,9 @@ tmp
 .idea
 .idea/*
 .byebug_history
+/.byebug_history
 
+/config/credentials/production.key
+/config/environments/test.rb
+/config/environments/development.rb
+/config/environments/production.rb

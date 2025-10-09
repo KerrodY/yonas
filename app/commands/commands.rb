@@ -1,193 +1,174 @@
-require './app/models/influence_push.rb'
+require './app/models/update_notification.rb'
+require './lib/authenticate_user.rb'
+require './app/services/discord_bot'
+require './lib/data.rb'
 
-module RegisterSlashCommands
-  def self.register_commands(bot)
-    bot.register_application_command(:server_online, 'Ping when the server is back online') do |cmd|
+module Commands
+  extend Discordrb::EventContainer
+  include AuthenticateUser
+
+  application_command(:help) do |event|
+    commands = DiscordBot.instance.bot.get_application_commands
+    help_message = "Here are the available commands:\n\n"
+
+    commands.each do |command|
+      help_message += "**/#{command.name}**: #{command.description}\n"
     end
 
-    bot.register_application_command(:server_status, 'Check the server status') do |cmd|
-    end
+    event.respond(content: help_message, ephemeral: true)
+  end
 
-    bot.register_application_command(:scorpio_stop, 'Clear scorpio timer') do |cmd|
-    end
+  application_command(:server_status) do |event|
+    next unless AuthenticateUser.authorized?(event)
 
-    bot.register_application_command(:scorpio, 'Scorpio killed and set timer for respawn the next night') do |cmd|
-    end
+    html = URI.open(DATA::WEBSITE_SERVER_STATUS)
+    doc = Nokogiri::HTML(html)
 
-    bot.register_application_command(:roll, 'Roll the dice') do |cmd|
-    end
 
-    bot.register_application_command(:influence_push, 'Register for the influence race') do |cmd|
-      cmd.string('name', 'enter your name', required: true,)
-      cmd.string('role', 'enter your role', required: true, choices: { dps: 'dps', tank: 'tank', mage: 'mage', healer: 'healer'} )
-    end
+    # Find the div with the value "Delos"
+    div = doc.at("div.ags-ServerStatus-content-responses-response-server-name:contains('#{event.options['server']}')").parent
 
-    bot.register_application_command(:create_pvp_groups, 'Create groups from all register players') do |cmd|
-    end
+    if div
+      status = div.at_css('div.ags-ServerStatus-content-responses-response-server-status')['title']
 
-    bot.register_application_command(:delete_pvp_groups, 'Create groups from all register players') do |cmd|
+      case status
+      when 'Online'
+        event.respond(content: "#{event.options['server']} is **Online**")
+      when 'Maintenance'
+        event.respond(content: "#{event.options['server']} is in **Maintenance**")
+      when 'Offline'
+        event.respond(content: "#{event.options['server']} is **Offline**")
+      else
+        event.respond(content: "Status for #{event.options['server']} is **Unavailable**")
+      end
+    else
+      event.respond(content: "Server not found or status is unavailable")
     end
   end
-end
 
-module SlashCommands
-    extend Discordrb::EventContainer
+  application_command(:scorpio) do |event|
+    next unless AuthenticateUser.authorized?(event)
 
-    application_command(:influence_push) do |event|
-      InfluencePush.create!(player: event.options['name'], role: event.options['role'])
-      event.respond(content: "Registered!")
-    end
-
-
-    application_command(:delete_pvp_groups) do |event|
-      if InfluencePush.count == 0
-        event.respond(content: "Destroyed PvP groups")
-      else
-        event.respond(content: "Error destroying PvP groups")
+    @scorpio = true
+    channel_id = event.channel.id
+    channel = event.bot.channel(channel_id)
+    timezone = Time.now.zone == 'AUS Eastern Summer Time' ? 'AEST' : 'AEDT'
+    spawn_time = Time.zone.now + (89 * 60)
+    event.respond(content: "Scorpio will be spawning roughly at #{spawn_time.strftime("%I:%M %p - #{timezone} - %B %d, %Y")}")
+    loop do
+      remaining_time = spawn_time - Time.zone.now
+      break if remaining_time <= 0 || !@scorpio
+      if remaining_time <= 30 * 60 && remaining_time > 29 * 60
+        channel.send_message("Scorpio will be spawning in 30 minutes")
+      elsif remaining_time <= 10 * 60 && remaining_time > 9 * 60
+        channel.send_message("Scorpio will be spawning in 10 minutes")
+      elsif remaining_time <= 2 * 60 && remaining_time > 1 * 60
+        channel.send_message("Scorpio will be spawning in 2 minutes")
       end
+      sleep(61) # Sleep 61 seconds so logic checks work
+    end
+  end
+
+  application_command(:scorpio_stop) do |event|
+    next unless AuthenticateUser.authorized?(event)
+
+    @scorpio = false
+  end
+
+  application_command(:list_members) do |event|
+    next unless AuthenticateUser.authorized?(event)
+
+    member_role = event.server.roles.find { |role| role.name == 'Member' }
+    members_with_role = event.server.members.select { |member| member.role?(member_role) }
+
+    if members_with_role.any?
+      sorted_members = members_with_role.sort_by(&:display_name)
+      member_list = sorted_members.map(&:display_name).join("\n")
+      event.respond(content: "Members with the 'Member' role:\n#{member_list}")
+    else
+      event.respond(content: "No members with the 'Member' role found.")
+    end
+  end
+
+  application_command(:subscribe_to_updates) do |event|
+    next unless AuthenticateUser.authorized?(event, :staff)
+
+    UpdateNotification.create(channel_id: event.channel.id)
+    event.respond(content: "Subscribed to updates")
+  end
+
+  application_command(:unsubscribe_to_updates) do |event|
+    next unless AuthenticateUser.authorized?(event, :staff)
+
+    UpdateNotification.where(channel_id: event.channel.id).delete_all
+    event.respond(content: "Unsubscribed to updates")
+  end
+
+  application_command(:roll) do |event|
+    next unless AuthenticateUser.authorized?(event)
+
+    roll = rand(1..6)
+    event.respond(content: "Rolled #{roll}")
+  end
+
+  application_command(:cleanse) do |event|
+    next unless AuthenticateUser.authorized?(event, :governor)
+
+    server = event.server
+    owner_id = server.owner.id
+    kicked_users = []
+
+    server.members.each do |member|
+      next if member.id == owner_id || member.bot_account?
+
+      member.kick
+      kicked_users << {
+        display_name: member.display_name,
+        discord_name: member.username,
+        discord_id: member.id
+      }
     end
 
-
-    application_command(:create_pvp_groups) do |event|
-      event.respond(content: "Creating groups")
-
-      groups = InfluencePush.new.create_pvp_groups
-      puts groups
-      # Initialize a variable to store the message content
-      message_content = ""
-
-      # Iterate over groups and players
-      groups.each do |group_num, players|
-        temp = "Group #{group_num + 1}:"
-
-        # Add group information to the message content
-        message_content += "#{temp}\n"
-
-        players.each do |player|
-          # Add player information to the message content
-          message_content += "#{player[:player]} : #{player[:role]}\n"
-        end
-
-        # Add a line break between groups
-        message_content += "\n"
-      end
-
-      # Send the combined message
-      event.send_message(content: message_content)
-
-
+    kicked_users.each do |user|
+      Rails.logger.info "Kicked user: Display Name: #{user[:display_name]}, Discord Name: #{user[:discord_name]}, Discord ID: #{user[:discord_id]}"
     end
 
-    application_command(:server_online) do |event|
-      event.respond(content: "I will notify when you the server is back online!")
+    event.respond(content: "Total users kicked: #{kicked_users.size}")
+  end
 
-      channel_id = event.channel.id
-      url = 'https://www.newworld.com/en-us/support/server-status'
-
-
-      loop do
-        # Fetch the HTML content from the URL
-        html = URI.open(url).read
-
-        doc = Nokogiri::HTML(html)
-
-        # Find the div with the value "Delos"
-        div_delos = doc.at('div.ags-ServerStatus-content-responses-response-server-name:contains("Delos")')
-
-        puts div_delos
-
-        if div_delos
-          # Get the parent div
-          parent_div = div_delos.parent
-
-          if parent_div
-            # Check the children of the parent div for a div with title "Maintenance"
-            #maintenance_div = parent_div.css('div[title="Maintenance"]').first
-            online_div = parent_div.css('div[title="Online"]').first
-
-            puts online_div
-
-            if online_div
-              channel = event.bot.channel(channel_id)
-              channel&.send_message("Server is online @here")
-
-              break
-            end
-          else
-            puts "No parent div found for the 'Delos' div."
-          end
-        else
-          puts "The div with the value 'Delos' does not exist."
-        end
-        sleep(60)
-      end
-
+  def self.register_commands(bot, server_id:)
+    bot.register_application_command(:create_pvp_groups, 'Create groups with all players in this channel', server_id:) do |cmd|
     end
 
-    application_command(:scorpio) do |event|
-      @scorpio = true
-      channel_id = event.channel.id
-      channel = event.bot.channel(channel_id)
-      timezone = Time.now.zone == 'AUS Eastern Summer Time' ? 'AEST' : 'AEDT'
-      spawn_time = Time.now + (89 * 60)
-      event.respond(content: "Scorpio will be spawning roughly at #{spawn_time.strftime("%I:%M %p - #{timezone} - %B %d, %Y")}")
-      thirty_minutes, ten_minutes, two_minutes = nil
-      loop do
-        remaining_time = spawn_time - Time.now
-        break if remaining_time <= 0 || !@scorpio
-        if remaining_time <= 30 * 60 && remaining_time > 29 * 60
-          thirty_minutes = channel.send_message("Scorpio will be spawning in 30 minutes")
-        elsif remaining_time <= 10 * 60 && remaining_time > 9 * 60
-          ten_minutes = channel.send_message("Scorpio will be spawning in 10 minutes")
-        elsif remaining_time <= 2 * 60 && remaining_time > 1 * 60
-          two_minutes = channel.send_message("Scorpio will be spawning in 2 minutes")
-        end
-        sleep(61) # Sleep 61 seconds so logic checks work
-      end
-
+    bot.register_application_command(:apply, 'Apply to join the company', server_id:) do |cmd|
     end
 
-    application_command(:scorpio_stop) do |event|
-      @scorpio = false
+    bot.register_application_command(:help, 'List all Yonas commands', server_id:) do |cmd|
     end
 
-    application_command(:roll) do |event|
-      roll = rand(1..6)
-      event.respond(content: "Rolled #{roll}")
+    bot.register_application_command(:server_status, 'Check the server status', server_id:) do |cmd|
+      cmd.string('server', 'Select your server', required: true, choices: DATA::SERVERS)
     end
 
-    application_command(:server_status) do |event|
-        event.respond(content: "Checking server status...")
-        url = 'https://www.newworld.com/en-us/support/server-status'
+    bot.register_application_command(:scorpio_stop, 'Clear scorpio timer', server_id:) do |cmd|
+    end
 
-        # Fetch the HTML content from the URL
-        html = URI.open(url).read
+    bot.register_application_command(:scorpio, 'Scorpio killed and set timer for respawn the next night', server_id:) do |cmd|
+    end
 
-        doc = Nokogiri::HTML(html)
-        # Find the div with the value "Delos"
-        div_delos = doc.at('div.ags-ServerStatus-content-responses-response-server-name:contains("Delos")')
+    bot.register_application_command(:subscribe_to_updates, 'Subscribe to news and updates from New World website and social media', server_id:) do |cmd|
+    end
 
-        if div_delos
-          # Get the parent div
-          parent_div = div_delos.parent
+    bot.register_application_command(:unsubscribe_to_updates, 'Unsubscribe to news and updates', server_id:) do |cmd|
+    end
 
-          if parent_div
-            # Check the children of the parent div for a div with title "Maintenance"
-            maintenance_div = parent_div.css('div[title="Maintenance"]').first
-            online_div = parent_div.css('div[title="Online"]').first
+    bot.register_application_command(:roll, 'Roll the dice', server_id:) do |cmd|
+    end
 
-            if maintenance_div
-              event.send_message(content: "Server is under maintenance")
-            elsif online_div
-              event.send_message(content: "Server is online")
-            else
-              event.send_message(content: "Server status is unavailable")
-            end
-          else
-            puts "Found Delos server but cannot find status"
-          end
-        else
-          puts "Error finding Delos status"
-        end
-      end
+    bot.register_application_command(:list_members, 'List everyone with the member role', server_id:) do |cmd|
+    end
+
+    bot.register_application_command(:cleanse, 'Cleanse', server_id:) do |cmd|
+    end
+  end
 end

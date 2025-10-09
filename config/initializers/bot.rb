@@ -1,20 +1,17 @@
-
 require 'discordrb'
-require 'byebug'
 require 'open-uri'
 require 'nokogiri'
-require './app/commands/commands.rb'
+require './app/models/application_record'
+require './app/tasks/new_world_notifications'
+require './app/tasks/player_builds_task'
+require './app/services/discord_bot'
+unless Rails.env.test? || defined?(Rails::Console)
+  Rails.logger.info 'Starting up New World Notifications...'
+  NewWorldNotifications.new.start
 
-puts 'Bot is loading!'
+  Rails.logger.info 'Starting up pvp_build tasks...'
+  PlayerBuildsTask.new.start
 
-bot = Discordrb::Commands::CommandBot.new(token: 'MTE1OTcyNTg2NTE0NDQzNDcyOQ.GkHtf7.4ubcd_MT4aaseURGxD9NrwoyQG8DWt3T6oW8f0',      prefix: '/')
-
-
-# Dir["#{Rails.root}/app/commands/*.rb"].each { |file| require file }
-RegisterSlashCommands.register_commands(bot)
-bot.include! SlashCommands
-
-bot.run
-
-
-
+  Rails.logger.info 'Starting up discord bot...'
+  DiscordBot.instance
+end

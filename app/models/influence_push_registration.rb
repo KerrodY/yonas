@@ -1,0 +1,2 @@
+class InfluencePushRegistration < ApplicationRecord
+end

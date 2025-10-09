@@ -1,15 +1,15 @@
 source "https://rubygems.org"
 
-ruby "3.2.2"
+ruby "3.4.5"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 7.1.1"
+gem "rails", "~> 8.0.2"
 
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
 
 # Use sqlite3 as the database for Active Record
-gem "sqlite3", "~> 1.4"
+gem "sqlite3", ">= 2.1"
 
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
@@ -49,6 +49,8 @@ group :development, :test do
   gem "debug", platforms: %i[ mri windows ]
   gem "byebug"
   gem "rspec-rails"
+  gem 'rubocop', require: false
+  gem 'rubocop-rails', require: false
 end
 
 group :development do
@@ -69,6 +71,9 @@ group :test do
   gem "selenium-webdriver"
 end
 
-gem "discordrb", "~> 3.5"
+gem "discordrb"
 
 gem "nokogiri", "~> 1.15"
+
+gem "rufus-scheduler", "~> 3.9"
+gem 'csv'
