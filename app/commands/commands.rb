@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './app/models/update_notification.rb'
 require './lib/authenticate_user.rb'
 require './app/services/discord_bot'
@@ -8,6 +10,8 @@ module Commands
   include AuthenticateUser
 
   application_command(:help) do |event|
+    next unless AuthenticateUser.authorized?(event)
+
     commands = DiscordBot.instance.bot.get_application_commands
     help_message = "Here are the available commands:\n\n"
 
@@ -24,8 +28,6 @@ module Commands
     html = URI.open(DATA::WEBSITE_SERVER_STATUS)
     doc = Nokogiri::HTML(html)
 
-
-    # Find the div with the value "Delos"
     div = doc.at("div.ags-ServerStatus-content-responses-response-server-name:contains('#{event.options['server']}')").parent
 
     if div
@@ -137,11 +139,6 @@ module Commands
   end
 
   def self.register_commands(bot, server_id:)
-    bot.register_application_command(:create_pvp_groups, 'Create groups with all players in this channel', server_id:) do |cmd|
-    end
-
-    bot.register_application_command(:apply, 'Apply to join the company', server_id:) do |cmd|
-    end
 
     bot.register_application_command(:help, 'List all Yonas commands', server_id:) do |cmd|
     end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './app/models/influence_push_registration'
 require './lib/authenticate_user.rb'
 
@@ -5,20 +7,19 @@ module InfluencePush
   extend Discordrb::EventContainer
   include AuthenticateUser
 
-  TERRITORIES =  {
+  TERRITORIES = {
     cutless_keys: 'CutlessKeys', monarchs_bluffs: 'MonarchsBluffs', windsward: 'Windsward', reekwater: 'Reekwater',
     restless_shore: 'RestlessShore', everfall: 'Everfall', brightwood: 'Brightwood', weavers_fen: 'WeaversFen',
     edengrove: 'Edengrove', mourningdale: 'Mourningdale', ebonscale_reach: 'EbonscaleReach',
     brimstone_sands: 'BrimstoneSands'
-  }
+  }.freeze
 
   application_command(:register_influence_push) do |event|
     next unless AuthenticateUser.authorized?(event, :staff)
 
-    current_time = Date.today
     user_channel = event.user.voice_channel
     unless user_channel
-      event.channel.send_message("You need to be in a voice channel to register an influence push.")
+      event.respond(content: "You need to be in a voice channel to register an influence push.", ephemeral: true)
       next
     end
 
@@ -34,14 +35,12 @@ module InfluencePush
       if existing_record
         skipped_records << user.username
       else
-        InfluencePushRegistration.create!(server_id: event.server.id, discord_id: user.username, territory: event.options['territory'], time: current_time)
+        InfluencePushRegistration.create!(server_id: event.server.id, discord_id: user.username, territory: event.options['territory'], time: Date.today)
         created_records << user.username
       end
-
     end
 
-    event.respond(content: "Registered: #{created_records} players,\nAlready registered:#{skipped_records}")
-
+    event.respond(content: "Registered: #{created_records} players,\nAlready registered: #{skipped_records}")
   end
 
   application_command(:influence_push_player_totals) do |event|
@@ -61,7 +60,6 @@ module InfluencePush
     channel_id = event.channel.id
     channel = event.bot.channel(channel_id)
 
-    puts 'races: ', races
     if results
       message = "```Player           | Attended         | Average      \n"
 
@@ -70,7 +68,7 @@ module InfluencePush
           if player_name
             percentage = ((total_count.to_f / races) * 100).round(2)
 
-            message += "\n#{player_name.ljust(16)} | #{total_count.to_s.ljust(16)} | #{percentage.to_s+'%'.ljust(16)}"
+            message += "\n#{player_name.ljust(16)} | #{total_count.to_s.ljust(16)} | #{percentage}%"
           else
             channel.send_message("#{discord_id} has no registered pvp build, skipping")
           end

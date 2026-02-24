@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './app/models/player_build.rb'
 require './lib/authenticate_user.rb'
 require 'csv'
@@ -6,7 +8,6 @@ module PlayerBuilds
   extend Discordrb::EventContainer
   include AuthenticateUser
 
-  private
 
   def self.format_builds_table(builds)
     header = "#{'Player'.ljust(16)} | #{'Role'.ljust(10)} | #{'Weapon 1'.ljust(16)} | #{'Weapon 2'.ljust(16)} | #{'Armour'.ljust(6)} | #{'Heartrune'.ljust(14)}"
@@ -45,7 +46,7 @@ module PlayerBuilds
 
     PlayerBuild.remove_pvp_build(event)
 
-    event.respond(content: "Deleted #{event.options['name']}'s build!", ephemeral: true)
+    event.respond(content: "Deleted #{event.user.display_name}'s build!", ephemeral: true)
   end
 
   application_command(:unregistered_pvp_builds) do |event|
@@ -75,26 +76,23 @@ module PlayerBuilds
 
     guest = event.user.roles.any? { |role| role.name.downcase == 'guest' }
 
-    begin
-      PlayerBuild.find_or_initialize_by(discord_id: event.user.username, server_id: event.server.id).update!(
-        player: event.user.display_name,
-        role: event.options['role'],
-        weapon_1: event.options['weapon_1'],
-        weapon_2: event.options['weapon_2'],
-        heartrune: event.options['heartrune'],
-        armour_weight: event.options['armour_weight'],
-        guest: guest
-      )
+    PlayerBuild.find_or_initialize_by(discord_id: event.user.username, server_id: event.server.id).update!(
+      player: event.user.display_name,
+      role: event.options['role'],
+      weapon_1: event.options['weapon_1'],
+      weapon_2: event.options['weapon_2'],
+      heartrune: event.options['heartrune'],
+      armour_weight: event.options['armour_weight'],
+      guest: guest
+    )
 
-
-      DATA::WEAPONS_PARAMS.each_value do |weapon_name|
-        role = event.server.roles.find { |r| r.name == weapon_name }
-        event.user.remove_role(role) if role && event.user.role?(role)
-      end
-
-      event.user.add_role(event.server.roles.find { |r| r.name == event.options['weapon_1'] })
-      event.user.add_role(event.server.roles.find { |r| r.name == event.options['weapon_2'] })
+    DATA::WEAPONS_PARAMS.each_value do |weapon_name|
+      role = event.server.roles.find { |r| r.name == weapon_name }
+      event.user.remove_role(role) if role && event.user.role?(role)
     end
+
+    event.user.add_role(event.server.roles.find { |r| r.name == event.options['weapon_1'] })
+    event.user.add_role(event.server.roles.find { |r| r.name == event.options['weapon_2'] })
 
     event.respond(content: "Registered #{event.user.display_name}!", ephemeral: true)
   rescue StandardError => e
@@ -119,7 +117,7 @@ module PlayerBuilds
     event.channel.send_file(File.open(file_path), caption: "Here are the exported PvP builds.")
     event.respond(content: "Exported :)", ephemeral: true)
   ensure
-    File.delete(file_path) if File.exist?(file_path)
+    File.delete(file_path) if file_path && File.exist?(file_path)
   end
 
   application_command(:show_pvp_builds) do |event|

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './app/models/pvp_events.rb'
 require './lib/authenticate_user.rb'
 
@@ -11,28 +13,20 @@ module PvpGroups
     event.respond(content: "Creating PvP groups...")
 
     groups = PvpEvents.new.create_pvp_groups(event)
-
     next unless groups
-    # Initialize a variable to store the message content
+
     message_content = ""
 
-    # Iterate over groups and players
     groups.each do |group_num, players|
-      temp = "Group #{group_num + 1}:"
-
-      # Add group information to the message content
-      message_content += "#{temp}\n"
+      message_content += "Group #{group_num + 1}:\n"
 
       players.each do |player|
-        # Add player information to the message content
         message_content += "#{player[:player]} : #{player[:role]}\n"
       end
 
-      # Add a line break between groups
       message_content += "\n"
     end
 
-    # Send the combined message
     event.send_message(content: message_content)
   end
 

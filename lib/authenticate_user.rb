@@ -13,7 +13,7 @@ module AuthenticateUser
   def self.authorized?(event, group = :member)
     unless event.user.roles.any? { |role| ROLE_GROUPS[group].include?(role.name.downcase) }
       event.respond(content: "You do not have permission for this command, ask staff if you feel you should", ephemeral: true)
-      false
+      return false
     end
 
     true

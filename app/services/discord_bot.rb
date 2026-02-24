@@ -64,7 +64,7 @@ class DiscordBot
   end
 
   def server_join_event
-    bot.server_create do |event|
+    bot.server_create do |_event|
       Setup.new(bot)
     end
   end

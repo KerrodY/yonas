@@ -121,11 +121,14 @@ module Forms
   end
 
   button do |event|
-    if event.custom_id.start_with?('approve_')
-      application_id = event.custom_id.split('_').last.to_i
-      application = CompanyApplication.find(application_id)
-      application.update(status: 'approved')
+    action, id = event.custom_id.split('_', 2)
+    next unless %w[approve reject].include?(action)
 
+    application = CompanyApplication.find(id.to_i)
+    new_status = action == 'approve' ? 'approved' : 'rejected'
+    application.update(status: new_status)
+
+    if action == 'approve'
       user = event.server.members.find { |member| member.username == application.discord_name }
 
       if user
@@ -135,17 +138,12 @@ module Forms
         user.remove_role(guest_role) if guest_role
         user.nick = application.ign
       end
-
-      event.respond(content: "Application from #{application.discord_name} has been approved.")
-      event.message.delete
-    elsif event.custom_id.start_with?('reject_')
-      application_id = event.custom_id.split('_').last.to_i
-      application = CompanyApplication.find(application_id)
-      application.update(status: 'rejected')
-      event.respond(content: "Application from #{application.discord_name} has been rejected.")
-      event.message.delete
     end
+
+    event.respond(content: "Application from #{application.discord_name} has been #{new_status}.")
+    event.message.delete
   end
+
   def self.register_commands(bot, server_id:)
     bot.register_application_command(:apply, 'join_application', server_id:) do |cmd|
     end
