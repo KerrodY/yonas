@@ -6,7 +6,7 @@ Yonas is a Discord-integrated Ruby on Rails application for managing [New World]
 
 | Technology | Purpose |
 |---|---|
-| Ruby 3.4.5 | Language |
+| Ruby 4.0.5 | Language |
 | Rails 8.0 | Web framework |
 | SQLite3 | Database |
 | [Discordrb](https://github.com/shardlab/discordrb) | Discord bot framework |
@@ -46,7 +46,7 @@ lib/
 
 ### Requirements
 
-- Ruby 3.4.5
+- Ruby 4.0.5
 - Bundler
 - Docker (optional)
 
