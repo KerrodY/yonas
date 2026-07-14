@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 class Setup
   def initialize(bot, server = nil)
     @bot = bot
@@ -41,7 +42,7 @@ class Setup
         topic: yonas_channel[:topic],
         permission_overwrites: format_permissions(yonas_channel[:permission_overwrites], server)
       )
-      puts("Created 'Yonas' channel: #{yonas_channel} for server: #{server.name}")
+      Rails.logger.debug("Created 'Yonas' channel: #{yonas_channel} for server: #{server.name}")
     end
   end
 
@@ -91,8 +92,6 @@ class Setup
       server.create_role(name: weapon_name, colour: 0x808080, hoist: false, mentionable: true)
       Rails.logger.info("Created weapon role: #{weapon_name} for server: #{server.name}")
     end
-
-
   end
 
   def create_react_roles(server)
@@ -127,4 +126,3 @@ class Setup
     end
   end
 end
-

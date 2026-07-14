@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
-require './app/models/player_build.rb'
-require './lib/authenticate_user.rb'
+require './app/models/player_build'
+require './lib/authenticate_user'
 require 'csv'
 
 module PlayerBuilds
   extend Discordrb::EventContainer
   include AuthenticateUser
-
 
   def self.format_builds_table(builds)
     header = "#{'Player'.ljust(16)} | #{'Role'.ljust(10)} | #{'Weapon 1'.ljust(16)} | #{'Weapon 2'.ljust(16)} | #{'Armour'.ljust(6)} | #{'Heartrune'.ljust(14)}"

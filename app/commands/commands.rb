@@ -139,7 +139,6 @@ module Commands
   end
 
   def self.register_commands(bot, server_id:)
-
     bot.register_application_command(:help, 'List all Yonas commands', server_id:) do |cmd|
     end
 

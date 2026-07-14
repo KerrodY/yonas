@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require './app/models/pvp_events.rb'
-require './lib/authenticate_user.rb'
+require './app/models/pvp_events'
+require './lib/authenticate_user'
 
 module PvpGroups
   extend Discordrb::EventContainer

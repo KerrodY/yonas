@@ -6,7 +6,7 @@ RSpec.describe InfluencePushRegistration, type: :model do
       discord_id: 'testuser',
       server_id: '123456',
       territory: 'Everfall',
-      time: Date.today
+      time: Time.zone.today
     }
   end
 
@@ -21,7 +21,7 @@ RSpec.describe InfluencePushRegistration, type: :model do
       reloaded = described_class.find(registration.id)
 
       expect(reloaded.territory).to eq('Everfall')
-      expect(reloaded.time).to eq(Date.today)
+      expect(reloaded.time).to eq(Time.zone.today)
     end
   end
 
@@ -44,13 +44,13 @@ RSpec.describe InfluencePushRegistration, type: :model do
     end
 
     it 'filters by date' do
-      results = described_class.where('DATE(time) = ?', Date.today)
+      results = described_class.where('DATE(time) = ?', Time.zone.today)
       expect(results.count).to eq(4)
     end
 
     it 'can check for existing registrations by discord_id, server, date, and territory' do
       exists = described_class.where(server_id: '123456', discord_id: 'testuser')
-                              .where('DATE(time) = ?', Date.today)
+                              .where('DATE(time) = ?', Time.zone.today)
                               .where(territory: 'Everfall')
                               .exists?
 
@@ -59,7 +59,7 @@ RSpec.describe InfluencePushRegistration, type: :model do
 
     it 'returns false for non-existing registrations' do
       exists = described_class.where(server_id: '123456', discord_id: 'unknownuser')
-                              .where('DATE(time) = ?', Date.today)
+                              .where('DATE(time) = ?', Time.zone.today)
                               .where(territory: 'Everfall')
                               .exists?
 
@@ -82,4 +82,3 @@ RSpec.describe InfluencePushRegistration, type: :model do
     end
   end
 end
-

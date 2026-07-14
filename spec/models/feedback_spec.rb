@@ -61,4 +61,3 @@ RSpec.describe Feedback, type: :model do
     end
   end
 end
-

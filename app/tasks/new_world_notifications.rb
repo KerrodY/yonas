@@ -37,12 +37,10 @@ class NewWorldNotifications
   end
 
   def check_server_status
-    if fetch_server_status == 'Offline'
-      unless @server_status_offline
-        notify_server_status(false)
+    if (fetch_server_status == 'Offline') && !@server_status_offline
+      notify_server_status(false)
 
-        @server_status_offline = true
-      end
+      @server_status_offline = true
     end
 
     if @server_status_offline

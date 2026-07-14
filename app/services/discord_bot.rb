@@ -37,11 +37,9 @@ class DiscordBot
 
   # TODO: Pass params correctly
   def create_yonas_invite
-    @bot.invite_create({permissions: [:adminstrator], scopes: [:bot, :applications_commands]})
+    @bot.invite_create({ permissions: [:adminstrator], scopes: [:bot, :applications_commands] })
     "Invite URL: #{@bot.invite_url}"
   end
-
-  private
 
   def listeners
     server_join_event
@@ -131,8 +129,8 @@ class DiscordBot
 
     bot.voice_state_update do |event|
       user = event.user
-      new_channel = event.channel   # The new channel they joined
-      old_channel = event.old_channel   # The previous channel they were in
+      new_channel = event.channel # The new channel they joined
+      old_channel = event.old_channel # The previous channel they were in
       guild = event.server
 
       # When a user joins or moves to the "Join to Create" channel
@@ -151,17 +149,15 @@ class DiscordBot
       end
 
       # When a user leaves a channel
-      if old_channel
-        # If they leave a temporary channel
-        if temp_channels.key?(old_channel.id)
-          # Remove the user from the temporary channel's user list
-          temp_channels[old_channel.id][:users].delete(user.id)
+      # If they leave a temporary channel
+      if old_channel && temp_channels.key?(old_channel.id)
+        # Remove the user from the temporary channel's user list
+        temp_channels[old_channel.id][:users].delete(user.id)
 
-          # If the channel is empty, delete it
-          if old_channel.users.empty?
-            temp_channels[old_channel.id][:channel].delete
-            temp_channels.delete(old_channel.id)
-          end
+        # If the channel is empty, delete it
+        if old_channel.users.empty?
+          temp_channels[old_channel.id][:channel].delete
+          temp_channels.delete(old_channel.id)
         end
       end
     end

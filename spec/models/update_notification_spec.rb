@@ -55,4 +55,3 @@ RSpec.describe UpdateNotification, type: :model do
     end
   end
 end
-

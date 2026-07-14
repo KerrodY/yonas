@@ -63,4 +63,3 @@ RSpec.describe CompanyApplication, type: :model do
     end
   end
 end
-

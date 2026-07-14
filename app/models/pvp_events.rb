@@ -1,6 +1,5 @@
 class PvpEvents < ApplicationRecord
 
-
   def create_pvp_groups(event)
     PvpEvents.destroy_all!
 
@@ -17,7 +16,7 @@ class PvpEvents < ApplicationRecord
     split_into_groups(all_players)
   end
 
-    private
+  private
 
   def create_pvpers(event)
     user_channel = event.user.voice_channel

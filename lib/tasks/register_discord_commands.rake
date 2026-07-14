@@ -18,7 +18,6 @@ namespace :discord do
     end
     # Check for optional server_id environment variable
 
-
     if @server_id
       puts "Refreshing Discord slash commands for guild #{@server_id}..."
     else

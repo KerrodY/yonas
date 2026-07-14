@@ -28,14 +28,14 @@ module InfluencePush
 
     user_channel.users.each do |user|
       existing_record = InfluencePushRegistration.where(server_id: event.server.id, discord_id: user.username)
-                                                 .where('DATE(time) = ?', Date.today)
+                                                 .where('DATE(time) = ?', Time.zone.today)
                                                  .where(territory: event.options['territory'])
                                                  .exists?
 
       if existing_record
         skipped_records << user.username
       else
-        InfluencePushRegistration.create!(server_id: event.server.id, discord_id: user.username, territory: event.options['territory'], time: Date.today)
+        InfluencePushRegistration.create!(server_id: event.server.id, discord_id: user.username, territory: event.options['territory'], time: Time.zone.today)
         created_records << user.username
       end
     end

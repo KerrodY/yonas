@@ -24,8 +24,6 @@ class PlayerBuild < ApplicationRecord
     end
   end
 
-  private
-
   def self.build_weapon_1_query(params, server_id)
     query = {}
     query["weapon_1"] = [params["weapon_1"], params["weapon_2"]] if params["weapon_1"] || params["weapon_2"]

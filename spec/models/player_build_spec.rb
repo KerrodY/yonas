@@ -60,9 +60,8 @@ RSpec.describe PlayerBuild, type: :model do
       build = described_class.create!(valid_attributes)
 
       event = double('event',
-        user: double('user', username: 'testuser'),
-        server: double('server', id: '123456')
-      )
+                     user: double('user', username: 'testuser'),
+                     server: double('server', id: '123456'))
 
       described_class.remove_pvp_build(event)
 
@@ -72,13 +71,12 @@ RSpec.describe PlayerBuild, type: :model do
     it 'does not destroy builds for other users' do
       described_class.create!(valid_attributes)
       other_build = described_class.create!(valid_attributes.merge(
-        player: 'OtherPlayer', discord_id: 'otheruser'
-      ))
+                                              player: 'OtherPlayer', discord_id: 'otheruser'
+                                            ))
 
       event = double('event',
-        user: double('user', username: 'testuser'),
-        server: double('server', id: '123456')
-      )
+                     user: double('user', username: 'testuser'),
+                     server: double('server', id: '123456'))
 
       described_class.remove_pvp_build(event)
 
@@ -93,19 +91,18 @@ RSpec.describe PlayerBuild, type: :model do
 
     let!(:bow_spear_build) do
       described_class.create!(valid_attributes.merge(
-        player: 'Archer', discord_id: 'archer',
-        weapon_1: 'Bow', weapon_2: 'Spear',
-        role: 'ranged_dps', armour_weight: 'light'
-      ))
+                                player: 'Archer', discord_id: 'archer',
+                                weapon_1: 'Bow', weapon_2: 'Spear',
+                                role: 'ranged_dps', armour_weight: 'light'
+                              ))
     end
 
     let(:server) { double('server', id: '123456') }
 
     it 'searches by weapon_1 only' do
       event = double('event',
-        options: { 'weapon_1' => 'Great Axe' },
-        server: server
-      )
+                     options: { 'weapon_1' => 'Great Axe' },
+                     server: server)
 
       results = described_class.search_for_builds(event)
 
@@ -115,9 +112,8 @@ RSpec.describe PlayerBuild, type: :model do
 
     it 'searches by weapon_2 only' do
       event = double('event',
-        options: { 'weapon_2' => 'Spear' },
-        server: server
-      )
+                     options: { 'weapon_2' => 'Spear' },
+                     server: server)
 
       results = described_class.search_for_builds(event)
 
@@ -126,9 +122,8 @@ RSpec.describe PlayerBuild, type: :model do
 
     it 'searches by both weapons' do
       event = double('event',
-        options: { 'weapon_1' => 'Great Axe', 'weapon_2' => 'War Hammer' },
-        server: server
-      )
+                     options: { 'weapon_1' => 'Great Axe', 'weapon_2' => 'War Hammer' },
+                     server: server)
 
       results = described_class.search_for_builds(event)
 
@@ -137,9 +132,8 @@ RSpec.describe PlayerBuild, type: :model do
 
     it 'searches by armour_weight' do
       event = double('event',
-        options: { 'armour_weight' => 'light' },
-        server: server
-      )
+                     options: { 'armour_weight' => 'light' },
+                     server: server)
 
       results = described_class.search_for_builds(event)
 
@@ -149,9 +143,8 @@ RSpec.describe PlayerBuild, type: :model do
 
     it 'returns nil when no matches found' do
       event = double('event',
-        options: { 'weapon_1' => 'Life Staff' },
-        server: server
-      )
+                     options: { 'weapon_1' => 'Life Staff' },
+                     server: server)
 
       results = described_class.search_for_builds(event)
 
@@ -159,4 +152,3 @@ RSpec.describe PlayerBuild, type: :model do
     end
   end
 end
-
