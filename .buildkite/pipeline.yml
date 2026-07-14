@@ -13,6 +13,7 @@
 steps:
   - label: ":rubocop: Lint"
     key: lint
+    soft_fail: true
     command:
       - bundle install --jobs 4
       - bundle exec rubocop

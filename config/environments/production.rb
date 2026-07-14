@@ -88,4 +88,7 @@ Rails.application.configure do
   #
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+
+  # Discordrb bot api key — from encrypted credentials (requires RAILS_MASTER_KEY)
+  config.discord_bot_api_key = Rails.application.credentials.discord_bot_api_key
 end
