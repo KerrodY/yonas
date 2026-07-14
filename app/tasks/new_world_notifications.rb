@@ -16,7 +16,7 @@ class NewWorldNotifications
 
   def start
     @scheduler.every '4m' do
-      Rails.logger.info "Server status checked at #{Time.zone.now} - STATUS: #{fetch_server_status.upcase}"
+      Rails.logger.info "Server status checked at #{Time.zone.now} - STATUS: #{fetch_server_status&.upcase}"
       check_server_status
     end
 

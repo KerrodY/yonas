@@ -99,30 +99,32 @@ class Setup
     reaction_roles_channel = server.channels.find { |channel| channel.name == DATA::CHANNELS[:ROLES][:name] }
     return unless reaction_roles_channel
 
-    # TODO: Check for both react embded messages and give them custom content to identify them
-    existing_message = reaction_roles_channel.history(10).find { |msg| msg.author.id == @bot.profile.id }
+    # Each react role group is identified by its embed title, so setup stays idempotent per group
+    existing_titles = reaction_roles_channel.history(50)
+                                            .select { |msg| msg.author.id == @bot.profile.id }
+                                            .filter_map { |msg| msg.embeds.first&.title }
 
-    return if existing_message
+    DATA::REACT_ROLES.each do |group|
+      next if existing_titles.include?(group[:title])
 
-    DATA::REACT_ROLES.each do |roles|
       embed = Discordrb::Webhooks::Embed.new(
-        title: 'Select your roles',
-        description: 'React to this message with the corresponding emoji to get the role. React again to remove the role.',
+        title: group[:title],
+        description: 'React to this message with the corresponding emoji to get the role. Remove your reaction to remove the role.',
         color: 0x00ff00
       )
 
-      roles.each do |reaction_role|
+      group[:roles].each do |reaction_role|
         embed.add_field(name: reaction_role[:name], value: reaction_role[:emoji], inline: true)
       end
 
       message = reaction_roles_channel.send_message(nil, false, embed)
 
-      roles.each do |reaction_role|
+      group[:roles].each do |reaction_role|
         message.react(reaction_role[:emoji])
       end
-    end
 
-    Rails.logger.info("Created reaction roles message in channel: #{reaction_roles_channel.name} for server: #{server.name}")
+      Rails.logger.info("Created '#{group[:title]}' reaction roles message in channel: #{reaction_roles_channel.name} for server: #{server.name}")
+    end
   end
 end
 

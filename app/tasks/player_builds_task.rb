@@ -8,7 +8,7 @@ class PlayerBuildsTask
     scheduler = Rufus::Scheduler.new
 
     scheduler.every '1h' do
-      delete_non_member_builds
+      # delete_non_member_builds
     end
   end
 

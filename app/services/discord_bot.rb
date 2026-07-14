@@ -16,6 +16,9 @@ class DiscordBot
 
   COMMANDS = [Commands, PlayerBuilds, InfluencePush, Forms, PvpGroups].freeze
 
+  # U+FE0F — Discord sometimes drops this variation selector from emoji names in reaction events
+  EMOJI_VARIATION_SELECTOR = 65_039.chr(Encoding::UTF_8).freeze
+
   def initialize
     @bot = StartBot.new.bot
     create_yonas_invite
@@ -45,6 +48,46 @@ class DiscordBot
     member_join_event
     join_to_create_channel_event
     feedback_messages_event
+    reaction_role_events
+  end
+
+  def reaction_role_events
+    bot.reaction_add do |event|
+      role = reaction_role_for(event)
+      next unless role
+
+      event.server.member(event.user.id)&.add_role(role)
+      Rails.logger.info("Added role '#{role.name}' to #{event.user.username} on server: #{event.server.name}")
+    end
+
+    bot.reaction_remove do |event|
+      role = reaction_role_for(event)
+      next unless role
+
+      event.server.member(event.user.id)&.remove_role(role)
+      Rails.logger.info("Removed role '#{role.name}' from #{event.user.username} on server: #{event.server.name}")
+    end
+  end
+
+  # Maps a reaction event on one of the bot's react-role embeds to the corresponding server role
+  def reaction_role_for(event)
+    return if event.user.current_bot?
+    return unless event.channel.name == DATA::CHANNELS[:ROLES][:name]
+
+    message = event.message
+    return unless message&.author&.id == bot.profile.id
+
+    group = DATA::REACT_ROLES.find { |g| g[:title] == message.embeds.first&.title }
+    return unless group
+
+    reaction_role = group[:roles].find { |role| normalize_emoji(role[:emoji]) == normalize_emoji(event.emoji.name) }
+    return unless reaction_role
+
+    event.server.roles.find { |role| role.name == reaction_role[:name] }
+  end
+
+  def normalize_emoji(emoji)
+    emoji.to_s.delete(EMOJI_VARIATION_SELECTOR)
   end
 
   def feedback_messages_event

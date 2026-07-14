@@ -143,12 +143,12 @@ module DATA
   WEAPONS = [
     { name: 'Sword and Shield', emoji: '🛡️' },
     { name: 'Sword', emoji: '⚔️' },
-    { name: 'Rapier', emoji: '🗡️' },
+    { name: 'Rapier', emoji: '🤺' },
     { name: 'Hatchet', emoji: '🪓' },
     { name: 'Flail and Shield', emoji: '⛓️' },
     { name: 'Spear', emoji: '🔱' },
-    { name: 'Great Axe', emoji: '🪓' },
-    { name: 'Great Sword', emoji: '⚔️' },
+    { name: 'Great Axe', emoji: '⚒️' },
+    { name: 'Great Sword', emoji: '🗡️' },
     { name: 'War Hammer', emoji: '🔨' },
     { name: 'Bow', emoji: '🏹' },
     { name: 'Musket', emoji: '🔫' },
@@ -171,5 +171,8 @@ module DATA
 
   BUILDS = { 'DPS' => 'dps', 'Ranged DPS' => 'ranged_dps', 'Tank' => 'tank', 'Mage' => 'mage', 'Healer' => 'healer' }.freeze
 
-  REACT_ROLES = [WEAPONS, CRAFTING_ROLES].freeze
+  REACT_ROLES = [
+    { title: 'Select your weapon roles', roles: WEAPONS }.freeze,
+    { title: 'Select your crafting roles', roles: CRAFTING_ROLES }.freeze
+  ].freeze
 end
