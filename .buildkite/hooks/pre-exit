@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Steps run in Docker as root, leaving root-owned files (bootsnap cache, tmp/,
+# test sqlite db) in the checkout that the agent then can't clean up.
+# Reset ownership to the agent user after every job.
+docker run --rm -v "$(pwd):/workdir" alpine chown -R "$(id -u):$(id -g)" /workdir
