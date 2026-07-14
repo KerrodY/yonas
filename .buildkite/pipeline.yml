@@ -1,0 +1,54 @@
+# Yonas CI/CD
+#
+# Designed for a single Buildkite agent running on a Raspberry Pi (arm64) with
+# Docker installed. Lint and specs run in a throwaway Ruby container (with a
+# named volume caching gems between builds), then master builds the production
+# image from the Dockerfile and replaces the running container.
+#
+# Requirements on the Pi:
+#   - Docker, with the buildkite-agent user in the `docker` group
+#   - RAILS_MASTER_KEY exported in the agent's `environment` hook,
+#     or the key placed at /etc/yonas/master.key (see .buildkite/deploy.sh)
+
+steps:
+  - label: ":rubocop: Lint"
+    key: lint
+    command:
+      - bundle install --jobs 4
+      - bundle exec rubocop
+    plugins:
+      - docker#v5.13.0:
+          image: "ruby:4.0.5"
+          volumes:
+            - "yonas-bundle:/usr/local/bundle"
+
+  - label: ":rspec: Specs"
+    key: specs
+    command:
+      - bundle install --jobs 4
+      - bundle exec rails db:prepare
+      - bundle exec rspec
+    plugins:
+      - docker#v5.13.0:
+          image: "ruby:4.0.5"
+          environment:
+            - "RAILS_ENV=test"
+          volumes:
+            - "yonas-bundle:/usr/local/bundle"
+
+  - wait: ~
+
+  - label: ":docker: Build production image"
+    key: build
+    if: build.branch == "master"
+    command:
+      - docker build --pull -t "yonas:$BUILDKITE_COMMIT" -t "yonas:latest" .
+
+  - wait: ~
+
+  - label: ":rocket: Deploy"
+    key: deploy
+    if: build.branch == "master"
+    concurrency: 1
+    concurrency_group: "yonas/deploy"
+    command: ".buildkite/deploy.sh"
