@@ -2,7 +2,6 @@
 
 require './app/models/update_notification.rb'
 require './lib/authenticate_user.rb'
-require './app/services/discord_bot'
 require './lib/data.rb'
 
 module Commands
