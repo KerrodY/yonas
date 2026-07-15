@@ -29,7 +29,7 @@ class NewWorldNotifications
   private
 
   def fetch_server_status
-    html = URI.open(DATA::WEBSITE_SERVER_STATUS)
+    html = URI.parse(DATA::WEBSITE_SERVER_STATUS).open
     doc = Nokogiri::HTML(html)
 
     container = doc.at('div.ags-ServerStatus-content-responses')
@@ -57,7 +57,7 @@ class NewWorldNotifications
   end
 
   def fetch_article_links
-    html = URI.open('https://www.newworld.com/en-gb/news')
+    html = URI.parse('https://www.newworld.com/en-gb/news').open
     doc = Nokogiri::HTML(html)
 
     container = doc.css('.ags-ContainerModule-container-slotModuleContainer.js-blogContainer')
@@ -89,7 +89,7 @@ class NewWorldNotifications
     article_links.each do |article|
       break unless new_news?(article)
 
-      UpdateNotification.all.find_each do |channel|
+      UpdateNotification.find_each do |channel|
         discord_channel = DiscordBot.instance.bot.channel(channel.channel_id)
         discord_channel.send_message("[#{article[:title]}](#{article[:link]})")
       end

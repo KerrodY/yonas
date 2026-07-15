@@ -145,10 +145,8 @@ module Forms
   end
 
   def self.register_commands(bot, server_id:)
-    bot.register_application_command(:apply, 'join_application', server_id:) do |cmd|
-    end
+    bot.register_application_command(:apply, 'join_application', server_id:)
 
-    bot.register_application_command(:review_applications, 'Review all pending applications', server_id:) do |cmd|
-    end
+    bot.register_application_command(:review_applications, 'Review all pending applications', server_id:)
   end
 end

@@ -13,7 +13,7 @@ RSpec.describe DATA do
     end
 
     it 'has unique titles across groups' do
-      titles = DATA::REACT_ROLES.map { |group| group[:title] }
+      titles = DATA::REACT_ROLES.pluck(:title)
       expect(titles.uniq).to eq(titles)
     end
 
@@ -32,8 +32,8 @@ RSpec.describe DATA do
     end
 
     it 'only references roles created during server setup' do
-      created_role_names = DATA::SERVER_ROLES.map { |role| role[:name] } + DATA::WEAPONS_PARAMS.keys
-      react_role_names = DATA::REACT_ROLES.flat_map { |group| group[:roles] }.map { |role| role[:name] }
+      created_role_names = DATA::SERVER_ROLES.pluck(:name) + DATA::WEAPONS_PARAMS.keys
+      react_role_names = DATA::REACT_ROLES.flat_map { |group| group[:roles] }.pluck(:name)
 
       expect(created_role_names).to include(*react_role_names)
     end

@@ -51,8 +51,7 @@ RSpec.describe InfluencePushRegistration, type: :model do
     it 'can check for existing registrations by discord_id, server, date, and territory' do
       exists = described_class.where(server_id: '123456', discord_id: 'testuser')
                               .where('DATE(time) = ?', Time.zone.today)
-                              .where(territory: 'Everfall')
-                              .exists?
+                              .exists?(territory: 'Everfall')
 
       expect(exists).to be true
     end
@@ -60,8 +59,7 @@ RSpec.describe InfluencePushRegistration, type: :model do
     it 'returns false for non-existing registrations' do
       exists = described_class.where(server_id: '123456', discord_id: 'unknownuser')
                               .where('DATE(time) = ?', Time.zone.today)
-                              .where(territory: 'Everfall')
-                              .exists?
+                              .exists?(territory: 'Everfall')
 
       expect(exists).to be false
     end

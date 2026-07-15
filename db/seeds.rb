@@ -15,7 +15,7 @@ def import_pvp_builds_from_csv(csv_filename, server_id)
   csv_file_path = Rails.root.join('lib', 'assets', 'seeds', csv_filename)
 
   unless File.exist?(csv_file_path)
-    Rails.logger.debug "Warning: CSV file not found at #{csv_file_path}"
+    Rails.logger.debug { "Warning: CSV file not found at #{csv_file_path}" }
     return
   end
 
@@ -23,7 +23,7 @@ def import_pvp_builds_from_csv(csv_filename, server_id)
   updated_count = 0
   error_count = 0
 
-  Rails.logger.debug "Importing PvP builds from #{csv_filename} for server #{server_id}..."
+  Rails.logger.debug { "Importing PvP builds from #{csv_filename} for server #{server_id}..." }
 
   CSV.foreach(csv_file_path, headers: true) do |row|
     # Map CSV headers to database columns
@@ -31,8 +31,8 @@ def import_pvp_builds_from_csv(csv_filename, server_id)
       server_id: server_id,
       player: row['Player']&.strip,
       role: row['Role']&.strip,
-      weapon_1: row['Weapon1']&.strip,
-      weapon_2: row['Weapon2']&.strip,
+      weapon1: row['Weapon1']&.strip,
+      weapon2: row['Weapon2']&.strip,
       armour_weight: row['ArmourWeight']&.strip,
       heartrune: row['Heartrune']&.strip,
       guest: row['Guest']&.strip&.downcase == 'true',
@@ -55,18 +55,18 @@ def import_pvp_builds_from_csv(csv_filename, server_id)
     if player_build
       player_build.update!(player_data)
       updated_count += 1
-      Rails.logger.debug "  Updated: #{player_data[:player]} (#{player_data[:discord_id]})"
+      Rails.logger.debug { "  Updated: #{player_data[:player]} (#{player_data[:discord_id]})" }
     else
       PlayerBuild.create!(player_data)
       imported_count += 1
-      Rails.logger.debug "  Imported: #{player_data[:player]} (#{player_data[:discord_id]})"
+      Rails.logger.debug { "  Imported: #{player_data[:player]} (#{player_data[:discord_id]})" }
     end
   rescue StandardError => e
     error_count += 1
-    Rails.logger.debug "  Error: #{e.message} for player: #{row['Player']}"
+    Rails.logger.debug { "  Error: #{e.message} for player: #{row['Player']}" }
   end
 
-  Rails.logger.debug "Import completed: #{imported_count} new, #{updated_count} updated, #{error_count} errors"
+  Rails.logger.debug { "Import completed: #{imported_count} new, #{updated_count} updated, #{error_count} errors" }
 end
 
 # Seed PvP builds data

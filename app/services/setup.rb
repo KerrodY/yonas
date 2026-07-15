@@ -42,7 +42,7 @@ class Setup
         topic: yonas_channel[:topic],
         permission_overwrites: format_permissions(yonas_channel[:permission_overwrites], server)
       )
-      Rails.logger.debug("Created 'Yonas' channel: #{yonas_channel} for server: #{server.name}")
+      Rails.logger.debug { "Created 'Yonas' channel: #{yonas_channel} for server: #{server.name}" }
     end
   end
 

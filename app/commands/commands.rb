@@ -24,7 +24,7 @@ module Commands
   application_command(:server_status) do |event|
     next unless AuthenticateUser.authorized?(event)
 
-    html = URI.open(DATA::WEBSITE_SERVER_STATUS)
+    html = URI.parse(DATA::WEBSITE_SERVER_STATUS).open
     doc = Nokogiri::HTML(html)
 
     div = doc.at("div.ags-ServerStatus-content-responses-response-server-name:contains('#{event.options['server']}')").parent
@@ -138,32 +138,24 @@ module Commands
   end
 
   def self.register_commands(bot, server_id:)
-    bot.register_application_command(:help, 'List all Yonas commands', server_id:) do |cmd|
-    end
+    bot.register_application_command(:help, 'List all Yonas commands', server_id:)
 
     bot.register_application_command(:server_status, 'Check the server status', server_id:) do |cmd|
       cmd.string('server', 'Select your server', required: true, choices: DATA::SERVERS)
     end
 
-    bot.register_application_command(:scorpio_stop, 'Clear scorpio timer', server_id:) do |cmd|
-    end
+    bot.register_application_command(:scorpio_stop, 'Clear scorpio timer', server_id:)
 
-    bot.register_application_command(:scorpio, 'Scorpio killed and set timer for respawn the next night', server_id:) do |cmd|
-    end
+    bot.register_application_command(:scorpio, 'Scorpio killed and set timer for respawn the next night', server_id:)
 
-    bot.register_application_command(:subscribe_to_updates, 'Subscribe to news and updates from New World website and social media', server_id:) do |cmd|
-    end
+    bot.register_application_command(:subscribe_to_updates, 'Subscribe to news and updates from New World website and social media', server_id:)
 
-    bot.register_application_command(:unsubscribe_to_updates, 'Unsubscribe to news and updates', server_id:) do |cmd|
-    end
+    bot.register_application_command(:unsubscribe_to_updates, 'Unsubscribe to news and updates', server_id:)
 
-    bot.register_application_command(:roll, 'Roll the dice', server_id:) do |cmd|
-    end
+    bot.register_application_command(:roll, 'Roll the dice', server_id:)
 
-    bot.register_application_command(:list_members, 'List everyone with the member role', server_id:) do |cmd|
-    end
+    bot.register_application_command(:list_members, 'List everyone with the member role', server_id:)
 
-    bot.register_application_command(:cleanse, 'Cleanse', server_id:) do |cmd|
-    end
+    bot.register_application_command(:cleanse, 'Cleanse', server_id:)
   end
 end

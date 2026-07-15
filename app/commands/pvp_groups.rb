@@ -31,7 +31,6 @@ module PvpGroups
   end
 
   def self.register_commands(bot, server_id:)
-    bot.register_application_command(:create_pvp_groups, 'Create groups with all players in this channel', server_id:) do |cmd|
-    end
+    bot.register_application_command(:create_pvp_groups, 'Create groups with all players in this channel', server_id:)
   end
 end

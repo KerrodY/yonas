@@ -12,6 +12,29 @@ AllCops:
     - 'node_modules/**/*'
     - 'vendor/**/*'
 
+# Both nested and compact class definitions are fine in this codebase
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+# Spec describe blocks are naturally long — that's coverage, not complexity
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+
+# seeds.rb is a run-once import script; size limits add ceremony, not safety
+Metrics/AbcSize:
+  Exclude:
+    - 'db/seeds.rb'
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - 'db/seeds.rb'
+Metrics/MethodLength:
+  Exclude:
+    - 'db/seeds.rb'
+Metrics/PerceivedComplexity:
+  Exclude:
+    - 'db/seeds.rb'
+
 Rails:
   Enabled: true
 Rails/NotNullColumn:

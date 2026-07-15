@@ -29,8 +29,7 @@ module InfluencePush
     user_channel.users.each do |user|
       existing_record = InfluencePushRegistration.where(server_id: event.server.id, discord_id: user.username)
                                                  .where('DATE(time) = ?', Time.zone.today)
-                                                 .where(territory: event.options['territory'])
-                                                 .exists?
+                                                 .exists?(territory: event.options['territory'])
 
       if existing_record
         skipped_records << user.username
@@ -87,7 +86,6 @@ module InfluencePush
       cmd.string('territory', 'select the territory', required: true, choices: TERRITORIES)
     end
 
-    bot.register_application_command(:influence_push_player_totals, 'Show all registered players pvp builds', server_id:) do |cmd|
-    end
+    bot.register_application_command(:influence_push_player_totals, 'Show all registered players pvp builds', server_id:)
   end
 end

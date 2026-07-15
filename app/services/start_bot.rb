@@ -10,7 +10,7 @@ class StartBot
 
     @bot.ready do
       Rails.logger.info "Bot is online and ready as #{@bot.profile.username}"
-      Rails.logger.debug "Bot is online and ready as #{@bot.profile.username}"
+      Rails.logger.debug { "Bot is online and ready as #{@bot.profile.username}" }
     end
 
     @bot.run(true)

@@ -49,7 +49,7 @@ RSpec.describe UpdateNotification, type: :model do
       described_class.create!(channel_id: '333')
 
       channel_ids = []
-      described_class.all.find_each { |n| channel_ids << n.channel_id }
+      described_class.find_each { |n| channel_ids << n.channel_id }
 
       expect(channel_ids).to contain_exactly('111', '222', '333')
     end
