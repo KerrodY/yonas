@@ -42,6 +42,10 @@ lib/
 └── data.rb               # Constants (roles, channels, weapons, etc.)
 ```
 
+## CI/CD
+
+Pushes to `master` are built and deployed by [Buildkite](https://buildkite.com) via an agent on the Raspberry Pi. The pipeline (`.buildkite/pipeline.yml`) lints and runs specs in Docker, builds the production image, and replaces the running container — health-checked against `/up`. Secrets come from Rails encrypted credentials (`config/credentials/production.yml.enc`), decrypted with the key at `/etc/yonas/master.key` on the Pi.
+
 ## Setup
 
 ### Requirements
