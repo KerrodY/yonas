@@ -37,7 +37,7 @@ plugin :tmp_restart
 plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"]
 
 # Start the Discord bot and schedulers once the server is up (see the plugin file)
-require_relative "../lib/puma/plugins/discord_bot"
+require_relative "../lib/puma/plugin/discord_bot"
 plugin :discord_bot
 
 # Specify the PID file. Defaults to tmp/pids/server.pid in development.
