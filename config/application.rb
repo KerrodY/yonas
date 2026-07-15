@@ -14,7 +14,10 @@ module Yonas
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w[assets tasks])
+    # data.rb defines DATA (not Data) and puma/ contains a puma plugin, not app
+    # code — neither conforms to Zeitwerk naming, so keep them out of the
+    # autoloader. Both are loaded via explicit requires instead.
+    config.autoload_lib(ignore: %w[assets tasks data.rb puma])
 
     # Configuration for the application, engines, and railties goes here.
     #
