@@ -7,7 +7,7 @@ module Forms
   include AuthenticateUser
 
   application_command(:apply) do |event|
-    next unless AuthenticateUser.authorized?(event, :guest)
+    next unless AuthenticateUser.authorized?(event, :guest, exact: true)
 
     event.show_modal(title: 'Company Application', custom_id: 'join_application') do |modal|
       modal.row do |row|
@@ -145,7 +145,7 @@ module Forms
   end
 
   def self.register_commands(bot, server_id:)
-    bot.register_application_command(:apply, 'join_application', server_id:)
+    bot.register_application_command(:apply, 'Apply to join the company', server_id:)
 
     bot.register_application_command(:review_applications, 'Review all pending applications', server_id:)
   end

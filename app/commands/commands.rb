@@ -112,30 +112,32 @@ module Commands
     event.respond(content: "Rolled #{roll}")
   end
 
-  application_command(:cleanse) do |event|
-    next unless AuthenticateUser.authorized?(event, :governor)
-
-    server = event.server
-    owner_id = server.owner.id
-    kicked_users = []
-
-    server.members.each do |member|
-      next if member.id == owner_id || member.bot_account?
-
-      member.kick
-      kicked_users << {
-        display_name: member.display_name,
-        discord_name: member.username,
-        discord_id: member.id
-      }
-    end
-
-    kicked_users.each do |user|
-      Rails.logger.info "Kicked user: Display Name: #{user[:display_name]}, Discord Name: #{user[:discord_name]}, Discord ID: #{user[:discord_id]}"
-    end
-
-    event.respond(content: "Total users kicked: #{kicked_users.size}")
-  end
+  # Disabled for now — mass-kick is destructive and needs an owner-only gate
+  # before it goes live again (see the parked auth discussion).
+  # application_command(:cleanse) do |event|
+  #   next unless event.user.id == event.server.owner_id
+  #
+  #   server = event.server
+  #   owner_id = server.owner.id
+  #   kicked_users = []
+  #
+  #   server.members.each do |member|
+  #     next if member.id == owner_id || member.bot_account?
+  #
+  #     member.kick
+  #     kicked_users << {
+  #       display_name: member.display_name,
+  #       discord_name: member.username,
+  #       discord_id: member.id
+  #     }
+  #   end
+  #
+  #   kicked_users.each do |user|
+  #     Rails.logger.info "Kicked user: Display Name: #{user[:display_name]}, Discord Name: #{user[:discord_name]}, Discord ID: #{user[:discord_id]}"
+  #   end
+  #
+  #   event.respond(content: "Total users kicked: #{kicked_users.size}")
+  # end
 
   def self.register_commands(bot, server_id:)
     bot.register_application_command(:help, 'List all Yonas commands', server_id:)
@@ -155,7 +157,5 @@ module Commands
     bot.register_application_command(:roll, 'Roll the dice', server_id:)
 
     bot.register_application_command(:list_members, 'List everyone with the member role', server_id:)
-
-    bot.register_application_command(:cleanse, 'Cleanse', server_id:)
   end
 end

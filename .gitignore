@@ -40,7 +40,6 @@ tmp
 .byebug_history
 /.byebug_history
 
-/config/credentials/production.key
-/config/environments/test.rb
-/config/environments/development.rb
+# Ignore all per-environment credential keys (the .yml.enc files are safe to commit)
+/config/credentials/*.key
 /config/environments/production.rb
