@@ -30,9 +30,24 @@ class DiscordBot
   def setup
     COMMANDS.each { |command| bot.include!(command) }
 
+    # Grandfather every server the bot already lives in as New World, so
+    # authorization can resolve a game profile for them (see Game.for).
+    ServerConfig.backfill!(bot.servers)
+
     Setup.new(bot)
 
+    register_slash_commands
+
     listeners
+  end
+
+  # Push slash command definitions to Discord for every server on boot, so
+  # option names and choices always match the code that reads them
+  def register_slash_commands
+    bot.servers.each_value do |server|
+      COMMANDS.each { |command| command.register_commands(bot, server_id: server.id) }
+      Rails.logger.info("Registered slash commands for server: #{server.name}")
+    end
   end
 
   # TODO: Pass params correctly
@@ -107,6 +122,7 @@ class DiscordBot
   def server_join_event
     bot.server_create do |_event|
       Setup.new(bot)
+      register_slash_commands
     end
   end
 
